@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Membre BAICO // Level 4</title>
+    
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Share+Tech+Mono&display=swap');
+
+        body {
+            margin: 0;
+            background-color: #050a0f;
+            font-family: 'Share Tech Mono', monospace;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            overflow: hidden;
+            position: relative;
+        }
+
+        /* Scanlines du fond */
+        body::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: repeating-linear-gradient(0deg, transparent, transparent 1px, rgba(0, 255, 255, 0.03) 1px, rgba(0, 255, 255, 0.03) 2px);
+            animation: bg-scanline 10s linear infinite;
+            z-index: -1;
+        }
+
+        @keyframes bg-scanline {
+            from { background-position: 0 0; }
+            to { background-position: 0 -1000px; }
+        }
+
+        .hud-card {
+            width: 420px;
+            background: rgba(10, 25, 40, 0.95);
+            border: 1px solid #00ffff;
+            box-shadow: 0 0 30px rgba(0, 255, 255, 0.2), inset 0 0 15px rgba(0, 255, 255, 0.1);
+            border-radius: 4px;
+            padding: 25px;
+            color: #00ffff;
+            position: relative;
+            overflow: hidden;
+            box-sizing: border-box;
+            transition: transform 0.3s ease;
+        }
+
+        .hud-card:hover {
+            transform: scale(1.02);
+        }
+
+        /* Coins décoratifs HUD */
+        .hud-card::after {
+            content: '▲';
+            position: absolute;
+            bottom: 5px; right: 5px;
+            font-size: 10px;
+            opacity: 0.5;
+        }
+
+        .hud-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 25px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid rgba(0, 255, 255, 0.5);
+        }
+
+        .hud-title {
+            font-family: 'Orbitron', sans-serif;
+            font-weight: 700;
+            letter-spacing: 2px;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+        }
+
+        .hud-profile {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .hud-avatar {
+            width: 100px;
+            height: 100px;
+            background: #000;
+            border: 1px solid #00ffff;
+            box-shadow: 0 0 15px rgba(0, 255, 255, 0.4);
+            overflow: hidden;
+            position: relative;
+        }
+
+        /* Styles pour l'image de l'agent */
+        .hud-photo {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            /* Effet bleuté pour coller au HUD */
+            filter: brightness(1.1) contrast(1.2) sepia(0.3) hue-rotate(140deg);
+        }
+
+        .hud-main-info {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .hud-name {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.6rem;
+            color: #fff;
+            text-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+            margin: 0;
+        }
+
+        .hud-id {
+            font-size: 0.9rem;
+            background: rgba(0, 255, 255, 0.1);
+            padding: 2px 8px;
+            margin-top: 5px;
+            width: fit-content;
+        }
+
+        .hud-data-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 18px;
+        }
+
+        .hud-label {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            color: rgba(0, 255, 255, 0.6);
+            letter-spacing: 1px;
+        }
+
+        .hud-value {
+            font-size: 1.1rem;
+            color: #fff;
+            font-weight: bold;
+        }
+
+        /* Barre de dangerosité dynamique */
+        .hud-progress-bar {
+            width: 100%;
+            height: 12px;
+            background: rgba(0, 255, 255, 0.05);
+            border: 1px solid rgba(0, 255, 255, 0.2);
+            margin-top: 8px;
+            padding: 2px;
+            box-sizing: border-box;
+        }
+
+        .hud-progress-fill {
+            height: 100%;
+            /* Utilise la variable style="--level: XX%" du HTML */
+            width: var(--level, 50%); 
+            background: linear-gradient(90deg, #00ffff, #ff0055);
+            box-shadow: 0 0 8px rgba(255, 0, 85, 0.6);
+            transition: width 1.5s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .status-ok { color: #00ff88; text-shadow: 0 0 8px rgba(0, 255, 136, 0.5); }
+
+        /* Animation de scanline interne */
+        .scan-overlay {
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: linear-gradient(to bottom, transparent 0%, rgba(0, 255, 255, 0.05) 50%, transparent 100%);
+            background-size: 100% 20px;
+            animation: move-scan 3s linear infinite;
+            pointer-events: none;
+        }
+
+        @keyframes move-scan {
+            from { transform: translateY(-100%); }
+            to { transform: translateY(100%); }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="hud-card">
+        <div class="scan-overlay"></div>
+        
+        <div class="hud-header">
+            <div class="hud-title">Membre BAICO // Level 4</div>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+            </svg>
+        </div>
+
+        <div class="hud-profile">
+            <div class="hud-avatar">
+                <img src="photos/cegolene.jpg" alt="Photo" class="hud-photo">
+            </div>
+            <div class="hud-main-info">
+                <div class="hud-name">SEVIN Cegolene</div>
+                <div class="hud-id">ID: 05012731950</div>
+            </div>
+        </div>
+
+        <div class="hud-data-grid">
+            <div class="hud-item">
+                <span class="hud-label">Dangerosité</span>
+                <div class="hud-progress-bar">
+                    <div class="hud-progress-fill" style="--level:  70%;"></div>
+                </div>
+            </div>
+            
+            <div class="hud-item">
+                <span class="hud-label">Grade</span><br>
+                <span class="hud-value">Agent de terrain</span>
+            </div>
+
+            <div class="hud-item">
+                <span class="hud-label">Permis de tuer</span>
+                <span class="hud-value status-ok">REFUSÉ</span>
+            </div>
+
+            <div class="hud-item">
+                <span class="hud-label">Permis de drone</span>
+                <span class="hud-value status-ok">ACTIF</span>
+            </div>
+        </div>
+    </div>
+
+</body>
+</html>
